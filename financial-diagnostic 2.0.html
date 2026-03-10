@@ -1,0 +1,694 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Финансовая диагностика</title>
+<style>
+* { margin:0; padding:0; box-sizing:border-box; -webkit-tap-highlight-color:transparent; }
+
+body {
+  font-family: Georgia, 'Times New Roman', serif;
+  background: #040f1e;
+  color: #e8f4ff;
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+  overflow-x: hidden;
+}
+
+.screen { display:none; }
+.screen.active { display:block; }
+
+/* ─── WELCOME ─── */
+#s-welcome {
+  padding: 60px 24px 40px;
+  padding-top: calc(60px + env(safe-area-inset-top));
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+}
+
+.orb1 {
+  position:fixed; top:-80px; right:-80px;
+  width:280px; height:280px; border-radius:50%;
+  background:rgba(26,100,200,0.28);
+  filter:blur(70px); pointer-events:none; z-index:0;
+}
+.orb2 {
+  position:fixed; bottom:60px; left:-70px;
+  width:240px; height:240px; border-radius:50%;
+  background:rgba(0,160,255,0.1);
+  filter:blur(70px); pointer-events:none; z-index:0;
+}
+
+.w-inner { position:relative; z-index:1; max-width:480px; }
+
+.badge {
+  display:inline-block;
+  background:rgba(77,184,255,0.12);
+  border:1px solid rgba(77,184,255,0.28);
+  border-radius:99px;
+  padding:6px 16px;
+  font-size:11px;
+  letter-spacing:2px;
+  color:#4db8ff;
+  text-transform:uppercase;
+  margin-bottom:28px;
+}
+
+.badge-dot {
+  display:inline-block;
+  width:6px; height:6px;
+  background:#4db8ff;
+  border-radius:50%;
+  margin-right:6px;
+  vertical-align:middle;
+  animation:blink 2s ease infinite;
+}
+
+@keyframes blink {
+  0%,100%{opacity:1} 50%{opacity:0.3}
+}
+
+h1 {
+  font-size:28px;
+  font-weight:bold;
+  line-height:1.25;
+  color:#e8f4ff;
+  margin-bottom:18px;
+}
+h1 em { font-style:italic; color:#4db8ff; }
+
+.subtitle {
+  font-size:15px;
+  line-height:1.75;
+  color:rgba(200,228,255,0.6);
+  margin-bottom:32px;
+}
+
+.stats {
+  display:flex;
+  gap:10px;
+  margin-bottom:36px;
+  flex-wrap:wrap;
+}
+
+.stat {
+  background:rgba(255,255,255,0.05);
+  border:1px solid rgba(255,255,255,0.1);
+  border-radius:10px;
+  padding:10px 16px;
+}
+
+.stat-n {
+  font-size:20px;
+  font-weight:bold;
+  color:#4db8ff;
+  display:block;
+}
+
+.stat-l {
+  font-size:11px;
+  color:rgba(180,215,255,0.35);
+  display:block;
+}
+
+.btn-go {
+  display:block;
+  width:100%;
+  max-width:400px;
+  padding:18px;
+  background:linear-gradient(135deg,#4db8ff,#1a8fd1);
+  border:none;
+  border-radius:16px;
+  font-family:Georgia,serif;
+  font-size:17px;
+  font-weight:bold;
+  color:#001a33;
+  cursor:pointer;
+  box-shadow:0 8px 32px rgba(77,184,255,0.3);
+  -webkit-appearance:none;
+  touch-action:manipulation;
+  text-align:center;
+}
+
+.w-footer {
+  margin-top:20px;
+  font-size:12px;
+  color:rgba(180,215,255,0.25);
+  text-align:center;
+}
+
+/* ─── QUIZ ─── */
+#s-quiz {
+  padding: 0 0 40px;
+  padding-bottom: calc(40px + env(safe-area-inset-bottom));
+  min-height: 100vh;
+  min-height: -webkit-fill-available;
+}
+
+.q-header {
+  padding:20px 20px 16px;
+  padding-top: calc(20px + env(safe-area-inset-top));
+  background:#040f1e;
+  position:sticky;
+  top:0;
+  z-index:10;
+}
+
+.q-top {
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:10px;
+}
+
+.q-cat {
+  font-size:10px;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:#4db8ff;
+}
+
+.q-num {
+  font-size:13px;
+  color:rgba(200,228,255,0.5);
+}
+
+.q-num b { color:#4db8ff; font-size:16px; }
+
+.progress {
+  height:3px;
+  background:rgba(255,255,255,0.08);
+  border-radius:99px;
+  overflow:hidden;
+}
+
+.progress-bar {
+  height:100%;
+  background:linear-gradient(90deg,#1a8fd1,#4db8ff);
+  border-radius:99px;
+  transition:width 0.4s ease;
+  width:0%;
+}
+
+.q-body { padding:16px 20px 0; }
+
+.q-card {
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:20px;
+  padding:22px 20px;
+  margin-bottom:16px;
+  position:relative;
+  overflow:hidden;
+}
+
+.q-card::before {
+  content:'';
+  position:absolute;
+  top:0; left:0; right:0; height:2px;
+  background:linear-gradient(90deg,#1a8fd1,#4db8ff,transparent);
+}
+
+.q-label {
+  font-size:11px;
+  color:rgba(180,215,255,0.3);
+  letter-spacing:1px;
+  margin-bottom:8px;
+}
+
+.q-text {
+  font-size:17px;
+  line-height:1.6;
+  color:#e8f4ff;
+}
+
+.opts { display:flex; flex-direction:column; gap:10px; }
+
+.opt {
+  display:flex;
+  align-items:center;
+  gap:14px;
+  width:100%;
+  padding:14px 16px;
+  background:rgba(255,255,255,0.04);
+  border:1.5px solid rgba(255,255,255,0.09);
+  border-radius:14px;
+  font-family:Georgia,serif;
+  font-size:14px;
+  line-height:1.5;
+  color:rgba(200,228,255,0.6);
+  cursor:pointer;
+  text-align:left;
+  -webkit-appearance:none;
+  touch-action:manipulation;
+  transition:background 0.15s, border-color 0.15s;
+}
+
+.opt-letter {
+  width:30px; height:30px; min-width:30px;
+  border-radius:50%;
+  background:rgba(255,255,255,0.07);
+  display:flex; align-items:center; justify-content:center;
+  font-size:12px; font-weight:bold;
+  color:rgba(180,215,255,0.3);
+  flex-shrink:0;
+  transition:background 0.15s, color 0.15s;
+  /* flex fallback */
+  text-align:center;
+  line-height:30px;
+}
+
+.opt.sel {
+  background:rgba(77,184,255,0.14);
+  border-color:rgba(77,184,255,0.5);
+  color:#a8dcff;
+}
+.opt.sel .opt-letter {
+  background:#4db8ff;
+  color:#001a33;
+}
+.opt.off {
+  opacity:0.4;
+  pointer-events:none;
+}
+
+/* ─── RESULT ─── */
+#s-result {
+  padding:32px 20px 40px;
+  padding-top: calc(32px + env(safe-area-inset-top));
+  padding-bottom: calc(40px + env(safe-area-inset-bottom));
+  min-height:100vh;
+  min-height:-webkit-fill-available;
+}
+
+.r-inner { max-width:480px; margin:0 auto; }
+
+.r-top {
+  text-align:center;
+  margin-bottom:24px;
+}
+
+.r-emoji { font-size:52px; display:block; margin-bottom:10px; }
+
+.r-level {
+  font-size:10px;
+  letter-spacing:3px;
+  text-transform:uppercase;
+  margin-bottom:6px;
+}
+
+.r-score {
+  font-size:64px;
+  font-weight:bold;
+  line-height:1;
+}
+
+.r-max {
+  font-size:20px;
+  color:rgba(200,228,255,0.5);
+}
+
+.r-desc {
+  font-size:14px;
+  line-height:1.75;
+  color:rgba(200,228,255,0.6);
+  margin-top:12px;
+}
+
+.r-card {
+  background:rgba(255,255,255,0.04);
+  border:1px solid rgba(255,255,255,0.08);
+  border-radius:16px;
+  padding:20px;
+  margin-bottom:16px;
+}
+
+.r-card-title {
+  font-size:11px;
+  letter-spacing:2px;
+  text-transform:uppercase;
+  color:rgba(180,215,255,0.3);
+  margin-bottom:16px;
+}
+
+.bar-row {
+  display:flex;
+  align-items:center;
+  gap:10px;
+  margin-bottom:12px;
+}
+.bar-row:last-child { margin-bottom:0; }
+
+.bar-name {
+  font-size:12px;
+  color:rgba(200,228,255,0.6);
+  width:108px;
+  min-width:108px;
+  line-height:1.3;
+}
+
+.bar-track {
+  flex:1;
+  height:5px;
+  background:rgba(255,255,255,0.07);
+  border-radius:99px;
+  overflow:hidden;
+}
+
+.bar-fill {
+  height:100%;
+  border-radius:99px;
+  width:0%;
+  transition:width 0.8s ease;
+}
+
+.bar-pct {
+  font-size:13px;
+  font-weight:bold;
+  min-width:34px;
+  text-align:right;
+}
+
+.cta-card {
+  background:linear-gradient(135deg,rgba(77,184,255,0.1),rgba(26,143,209,0.07));
+  border:1px solid rgba(77,184,255,0.22);
+  border-radius:20px;
+  padding:24px 20px;
+  margin-bottom:16px;
+}
+
+.cta-title {
+  font-size:19px;
+  font-weight:bold;
+  color:#a8dcff;
+  line-height:1.4;
+  margin-bottom:12px;
+}
+
+.cta-text {
+  font-size:13px;
+  line-height:1.75;
+  color:rgba(200,228,255,0.6);
+  margin-bottom:20px;
+}
+
+.btn-tg {
+  display:block;
+  width:100%;
+  padding:16px;
+  background:linear-gradient(135deg,#4db8ff,#1a8fd1);
+  border:none;
+  border-radius:13px;
+  font-family:Georgia,serif;
+  font-size:16px;
+  font-weight:bold;
+  color:#001a33;
+  cursor:pointer;
+  box-shadow:0 6px 28px rgba(77,184,255,0.28);
+  margin-bottom:10px;
+  -webkit-appearance:none;
+  touch-action:manipulation;
+  text-align:center;
+}
+
+.btn-again {
+  display:block;
+  width:100%;
+  padding:13px;
+  background:transparent;
+  border:1px solid rgba(255,255,255,0.13);
+  border-radius:13px;
+  font-family:Georgia,serif;
+  font-size:14px;
+  color:rgba(200,228,255,0.5);
+  cursor:pointer;
+  -webkit-appearance:none;
+  touch-action:manipulation;
+  text-align:center;
+}
+
+.r-footer {
+  text-align:center;
+  font-size:11px;
+  color:rgba(180,215,255,0.2);
+  margin-top:20px;
+}
+</style>
+</head>
+<body>
+
+<div class="orb1"></div>
+<div class="orb2"></div>
+
+<!-- WELCOME -->
+<div id="s-welcome" class="screen active">
+  <div class="w-inner">
+    <div class="badge"><span class="badge-dot"></span>MK Finconsulting</div>
+    <h1>Как хорошо вы знаете <em>финансы</em> своего бизнеса?</h1>
+    <p class="subtitle">Пройдите короткий тест. Узнайте, где теряются деньги — и что с этим делать.</p>
+    <div class="stats">
+      <div class="stat"><span class="stat-n">25</span><span class="stat-l">вопросов</span></div>
+      <div class="stat"><span class="stat-n">5–7</span><span class="stat-l">минут</span></div>
+      <div class="stat"><span class="stat-n">0 $</span><span class="stat-l">бесплатно</span></div>
+    </div>
+    <button class="btn-go" id="btnStart">Начать тест →</button>
+    <p class="w-footer">Без регистрации · Анонимно · Любое устройство</p>
+  </div>
+</div>
+
+<!-- QUIZ -->
+<div id="s-quiz" class="screen">
+  <div class="q-header">
+    <div class="q-top">
+      <span class="q-cat" id="qCat">—</span>
+      <span class="q-num"><b id="qN">1</b> / 25</span>
+    </div>
+    <div class="progress"><div class="progress-bar" id="pBar"></div></div>
+  </div>
+  <div class="q-body">
+    <div class="q-card">
+      <div class="q-label" id="qLbl">Вопрос 1</div>
+      <div class="q-text" id="qTxt"></div>
+    </div>
+    <div class="opts" id="optList"></div>
+  </div>
+</div>
+
+<!-- RESULT -->
+<div id="s-result" class="screen">
+  <div class="r-inner">
+    <div class="r-top">
+      <span class="r-emoji" id="rEmoji"></span>
+      <div class="r-level" id="rLevel"></div>
+      <div><span class="r-score" id="rScore">0</span><span class="r-max">/75</span></div>
+      <p class="r-desc" id="rDesc"></p>
+    </div>
+    <div class="r-card">
+      <div class="r-card-title">Результат по разделам</div>
+      <div id="barList"></div>
+    </div>
+    <div class="cta-card">
+      <div class="cta-title">Хотите узнать, что происходит с деньгами?</div>
+      <p class="cta-text">Финансовая диагностика — разбор вашего бизнеса по цифрам. Без сложных слов. Конкретные выводы и шаги.</p>
+      <button class="btn-tg" id="btnTg">Написать в Telegram ✈</button>
+      <button class="btn-again" id="btnAgain">Пройти тест заново</button>
+    </div>
+    <div class="r-footer">MK Finconsulting · @MK_Fintool</div>
+  </div>
+</div>
+
+<script>
+var Q = [
+  {c:"Деньги и расчёты",t:"Вы знаете, сколько денег остаётся с каждой продажи — после того, как оплатили товар или материалы?",o:[{t:"Да, знаю точную цифру",s:3},{t:"Примерно представляю",s:2},{t:"Не считал, но могу посчитать",s:1},{t:"Честно — не знаю",s:0}]},
+  {c:"Деньги и расчёты",t:"Вы знаете, сколько денег тратит бизнес каждый месяц — даже если ничего не продаёт?",o:[{t:"Да, знаю точно",s:3},{t:"Примерно знаю",s:2},{t:"Не считал специально",s:1},{t:"Нет, не знаю",s:0}]},
+  {c:"Деньги и расчёты",t:"Ваш бизнес в этом месяце зарабатывает больше, чем тратит?",o:[{t:"Да, знаю точно",s:3},{t:"Думаю, что да",s:2},{t:"Не уверен",s:1},{t:"Нет понимания",s:0}]},
+  {c:"Деньги и расчёты",t:"Вы знаете, при каком объёме продаж бизнес перестаёт работать в минус?",o:[{t:"Да, знаю эту цифру",s:3},{t:"Примерно представляю",s:2},{t:"Никогда не считал",s:1},{t:"Нет, не знаю",s:0}]},
+  {c:"Деньги и расчёты",t:"Случалось ли, что на счету мало денег, хотя продажи шли хорошо?",o:[{t:"Нет, такого не было",s:3},{t:"Было раз, разобрался почему",s:2},{t:"Было, причину не понял",s:1},{t:"Случается регулярно",s:0}]},
+  {c:"Принятие решений",t:"Когда вы решаете поднять или снизить цену — как вы это делаете?",o:[{t:"Считаю и проверяю по цифрам",s:3},{t:"Смотрю на конкурентов",s:2},{t:"На интуиции",s:1},{t:"Просто пробую",s:0}]},
+  {c:"Принятие решений",t:"Перед тем как нанять нового сотрудника, вы считаете, окупится ли он?",o:[{t:"Да, всегда считаю",s:3},{t:"Иногда прикидываю",s:2},{t:"Нанимаю по ощущению",s:1},{t:"Нет, не думал об этом",s:0}]},
+  {c:"Принятие решений",t:"Если появляется возможность купить оборудование или сделать вложение — как вы решаете?",o:[{t:"Считаю, когда вложение вернётся",s:3},{t:"Смотрю, есть ли деньги",s:2},{t:"Действую по ощущению",s:1},{t:"Решаю спонтанно",s:0}]},
+  {c:"Принятие решений",t:"Вы знаете, какой продукт или услуга приносит вам больше всего дохода?",o:[{t:"Да, знаю точно и отслеживаю",s:3},{t:"Примерно представляю",s:2},{t:"Не анализировал специально",s:1},{t:"Нет, не знаю",s:0}]},
+  {c:"Принятие решений",t:"Вы знаете, на каком клиенте или канале продаж зарабатываете больше всего?",o:[{t:"Да, знаю и отслеживаю",s:3},{t:"Примерно догадываюсь",s:2},{t:"Не думал об этом",s:1},{t:"Нет понимания",s:0}]},
+  {c:"Учёт и контроль",t:"Как вы ведёте учёт того, что происходит с деньгами в бизнесе?",o:[{t:"Есть таблицы или программа",s:3},{t:"Веду частично, не всё",s:2},{t:"Смотрю на остаток на счету",s:1},{t:"Никак не веду",s:0}]},
+  {c:"Учёт и контроль",t:"Есть ли у вас понимание, кто вам должен деньги и сколько?",o:[{t:"Да, всегда знаю точно",s:3},{t:"Примерно представляю",s:2},{t:"Слежу нерегулярно",s:1},{t:"Нет, теряю из виду",s:0}]},
+  {c:"Учёт и контроль",t:"Вы знаете, сколько товара или материалов у вас на складе в деньгах?",o:[{t:"Да, знаю точно",s:3},{t:"Примерно",s:2},{t:"Давно не считал",s:1},{t:"Не слежу за этим",s:0}]},
+  {c:"Учёт и контроль",t:"Если придёт налоговая — у вас всё в порядке с документами по расходам?",o:[{t:"Да, всё оформлено правильно",s:3},{t:"В основном да, есть мелкие пробелы",s:2},{t:"Не очень уверен",s:1},{t:"Думаю, будут вопросы",s:0}]},
+  {c:"Учёт и контроль",t:"Как часто вы смотрите на цифры бизнеса — чтобы понять, как идут дела?",o:[{t:"Регулярно, каждую неделю или месяц",s:3},{t:"Иногда, когда есть время",s:2},{t:"Редко",s:1},{t:"Практически никогда",s:0}]},
+  {c:"Планирование",t:"У вас есть план — сколько денег бизнес должен принести в следующие 3 месяца?",o:[{t:"Да, есть конкретный план с цифрами",s:3},{t:"Есть примерное понимание",s:2},{t:"Думаю об этом, но цифр нет",s:1},{t:"Нет никакого плана",s:0}]},
+  {c:"Планирование",t:"Если крупный клиент уйдёт — вы знаете, как это отразится на деньгах?",o:[{t:"Да, могу посчитать быстро",s:3},{t:"Примерно представляю",s:2},{t:"Не думал об этом",s:1},{t:"Нет, это пугает неизвестностью",s:0}]},
+  {c:"Планирование",t:"Есть ли у вас запас денег, который позволит бизнесу работать 1–2 месяца без дохода?",o:[{t:"Да, есть и я знаю сколько",s:3},{t:"Что-то есть, но не считал",s:2},{t:"Почти нет",s:1},{t:"Нет совсем",s:0}]},
+  {c:"Планирование",t:"Вы знаете, сколько денег нужно бизнесу на следующий месяц — аренда, зарплаты, налоги?",o:[{t:"Да, знаю точно",s:3},{t:"Примерно представляю",s:2},{t:"Не считал отдельно",s:1},{t:"Нет, не знаю",s:0}]},
+  {c:"Планирование",t:"Если нужно срочно вложить деньги в развитие — вы знаете, откуда их взять?",o:[{t:"Да, у меня есть понимание",s:3},{t:"Примерно представляю",s:2},{t:"Обычно решаю ситуативно",s:1},{t:"Нет, это сложный вопрос",s:0}]},
+  {c:"Ощущения и интуиция",t:"Вы принимаете финансовые решения чаще на основе цифр или на основе ощущений?",o:[{t:"На основе цифр",s:3},{t:"Смешанно",s:2},{t:"Чаще на ощущениях",s:1},{t:"Почти всегда на ощущениях",s:0}]},
+  {c:"Ощущения и интуиция",t:"Бывало ли, что вы думали «дела идут хорошо» — а потом деньги куда-то исчезли?",o:[{t:"Нет, такого не было",s:3},{t:"Один раз, разобрался",s:2},{t:"Было несколько раз",s:1},{t:"Случается регулярно",s:0}]},
+  {c:"Ощущения и интуиция",t:"Насколько вы уверены, что ваш бизнес сейчас прибыльный?",o:[{t:"Уверен, есть цифры",s:3},{t:"Думаю, что да",s:2},{t:"Не очень уверен",s:1},{t:"Честно — не знаю",s:0}]},
+  {c:"Ощущения и интуиция",t:"Если нужно объяснить финансовое состояние бизнеса стороннему человеку — вы бы смогли?",o:[{t:"Да, легко и с цифрами",s:3},{t:"В общих чертах — да",s:2},{t:"Затруднюсь с деталями",s:1},{t:"Нет, это сложно",s:0}]},
+  {c:"Ощущения и интуиция",t:"Как часто вы чувствуете тревогу из-за денег в бизнесе?",o:[{t:"Редко или никогда — всё понятно",s:3},{t:"Иногда бывает",s:2},{t:"Регулярно",s:1},{t:"Почти постоянно",s:0}]}
+];
+
+var CATS = ["Деньги и расчёты","Принятие решений","Учёт и контроль","Планирование","Ощущения и интуиция"];
+var LET  = ["А","Б","В","Г"];
+var RES  = [
+  {min:57,e:"✅",lv:"Хороший уровень",col:"#3abf8a",d:"Вы неплохо ориентируетесь в цифрах своего бизнеса. Но даже при хорошем понимании бывают зоны в тени. Профессиональный взгляд со стороны помогает найти возможности для роста, которые незаметны изнутри."},
+  {min:38,e:"⚠️",lv:"Есть важные пробелы",col:"#e8963a",d:"Вы чувствуете бизнес интуитивно — это ценно. Но часть важных цифр остаётся вне поля зрения. Именно здесь прячутся деньги, которые можно использовать лучше."},
+  {min:20,e:"🔍",lv:"Картина неполная",col:"#e05555",d:"Вы управляете бизнесом во многом на ощущениях. Без понимания цифр сложно расти, планировать и чувствовать уверенность. Хорошая новость: это поправимо."},
+  {min:0, e:"🚨",lv:"Финансы — тёмная зона",col:"#c0392b",d:"Сейчас финансы бизнеса во многом непрозрачны для вас. Это не критика — это просто точка, из которой можно двигаться вперёд. Важно знать, где стоишь, чтобы понять, куда идти."}
+];
+
+var cur=0, ans=[], locked=false;
+
+function show(id){
+  var ids=['s-welcome','s-quiz','s-result'];
+  for(var i=0;i<ids.length;i++){
+    var el=document.getElementById(ids[i]);
+    if(ids[i]===id){ el.className='screen active'; el.scrollTop=0; }
+    else { el.className='screen'; }
+  }
+  window.scrollTo(0,0);
+}
+
+function renderQ(){
+  var q=Q[cur];
+  locked=false;
+  document.getElementById('qCat').textContent=q.c;
+  document.getElementById('qN').textContent=cur+1;
+  document.getElementById('qLbl').textContent='Вопрос '+(cur+1);
+  document.getElementById('qTxt').textContent=q.t;
+  document.getElementById('pBar').style.width=Math.round(cur/Q.length*100)+'%';
+
+  var list=document.getElementById('optList');
+  list.innerHTML='';
+  for(var i=0;i<q.o.length;i++){
+    var btn=document.createElement('button');
+    btn.className='opt';
+    btn.setAttribute('data-score', q.o[i].s);
+    btn.setAttribute('data-idx', i);
+
+    var span=document.createElement('span');
+    span.className='opt-letter';
+    span.textContent=LET[i];
+
+    var txt=document.createTextNode(' '+q.o[i].t);
+    btn.appendChild(span);
+    btn.appendChild(txt);
+    list.appendChild(btn);
+  }
+
+  // единый обработчик на контейнере — работает надёжно на iOS
+  list.ontouchend=function(e){
+    e.preventDefault();
+    var btn=e.target;
+    while(btn && btn.className.indexOf('opt')===-1){ btn=btn.parentNode; }
+    if(btn && btn.className.indexOf('opt')!==-1) pick(btn);
+  };
+  list.onclick=function(e){
+    var btn=e.target;
+    while(btn && btn.className.indexOf('opt')===-1){ btn=btn.parentNode; }
+    if(btn && btn.className.indexOf('opt')!==-1) pick(btn);
+  };
+}
+
+function pick(btn){
+  if(locked) return;
+  locked=true;
+  var score=parseInt(btn.getAttribute('data-score'),10);
+  btn.className='opt sel';
+  var all=document.getElementById('optList').getElementsByClassName('opt');
+  // getElementsByClassName живой — итерируем через массив
+  var arr=[];
+  for(var i=0;i<all.length;i++) arr.push(all[i]);
+  for(var j=0;j<arr.length;j++){
+    if(arr[j]!==btn) arr[j].className='opt off';
+  }
+  ans.push(score);
+  setTimeout(function(){
+    if(cur<Q.length-1){ cur++; renderQ(); }
+    else { showResult(); }
+  }, 380);
+}
+
+function showResult(){
+  show('s-result');
+  var total=0;
+  for(var i=0;i<ans.length;i++) total+=ans[i];
+  var res=RES[RES.length-1];
+  for(var r=0;r<RES.length;r++){ if(total>=RES[r].min){res=RES[r];break;} }
+
+  document.getElementById('rEmoji').textContent=res.e;
+  document.getElementById('rLevel').textContent=res.lv;
+  document.getElementById('rLevel').style.color=res.col;
+  document.getElementById('rDesc').textContent=res.d;
+
+  var el=document.getElementById('rScore');
+  el.style.color=res.col;
+  var n=0;
+  var iv=setInterval(function(){
+    n=Math.min(n+2,total);
+    el.textContent=n;
+    if(n>=total) clearInterval(iv);
+  },22);
+
+  var bl=document.getElementById('barList');
+  bl.innerHTML='';
+  for(var ci=0;ci<CATS.length;ci++){
+    var cat=CATS[ci];
+    var earned=0,mx=0;
+    for(var qi=0;qi<Q.length;qi++){
+      if(Q[qi].c===cat){ earned+=(ans[qi]||0); mx+=3; }
+    }
+    var pct=Math.round(earned/mx*100);
+    var col=pct>=75?'#3abf8a':pct>=50?'#e8963a':'#e05555';
+
+    var row=document.createElement('div'); row.className='bar-row';
+    var nm=document.createElement('div'); nm.className='bar-name'; nm.textContent=cat;
+    var tr=document.createElement('div'); tr.className='bar-track';
+    var fl=document.createElement('div'); fl.className='bar-fill';
+    fl.id='bf'+ci; fl.style.background=col;
+    var pc=document.createElement('div'); pc.className='bar-pct';
+    pc.style.color=col; pc.textContent=pct+'%';
+    tr.appendChild(fl); row.appendChild(nm); row.appendChild(tr); row.appendChild(pc);
+    bl.appendChild(row);
+
+    (function(id,p){
+      setTimeout(function(){
+        var f=document.getElementById(id);
+        if(f) f.style.width=p+'%';
+      },300+ci*80);
+    })('bf'+ci,pct);
+  }
+}
+
+function tap(id, fn){
+  var el=document.getElementById(id);
+  var fired=false;
+  el.ontouchend=function(e){
+    e.preventDefault();
+    fired=true;
+    fn();
+  };
+  el.onclick=function(){
+    if(!fired) fn();
+    fired=false;
+  };
+}
+
+tap('btnStart',function(){
+  cur=0; ans=[]; locked=false;
+  show('s-quiz');
+  renderQ();
+});
+
+tap('btnTg',function(){
+  window.location.href='https://t.me/MK_Fintool';
+});
+
+tap('btnAgain',function(){
+  cur=0; ans=[]; locked=false;
+  show('s-welcome');
+});
+</script>
+</body>
+</html>
